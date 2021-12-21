@@ -34,6 +34,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.RemoteRefUpdate.Status;
+import org.eclipse.jgit.util.LfsFactory;
 
 /**
  * Class performing push operation on remote repository.
@@ -165,10 +166,13 @@ class PushProcess {
 				if (!willBeAttempted.isEmpty()) {
 					if (prePush != null) {
 						try {
+							LfsFactory.setCredentialsProvider(transport.getCredentialsProvider());
 							prePush.setRefs(willBeAttempted);
 							prePush.call();
 						} catch (AbortedByHookException | IOException e) {
 							throw new TransportException(e.getMessage(), e);
+						} finally {
+							LfsFactory.removeCredentialsProvider();
 						}
 					}
 				}
