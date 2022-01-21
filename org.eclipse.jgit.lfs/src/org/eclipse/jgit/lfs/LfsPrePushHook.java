@@ -115,6 +115,9 @@ public class LfsPrePushHook extends PrePushHook {
 
 		try (ObjectWalk walk = new ObjectWalk(getRepository())) {
 			for (RemoteRefUpdate up : refs) {
+				if (up.isDelete()) {
+					continue;
+				}
 				walk.setRewriteParents(false);
 				excludeRemoteRefs(walk);
 				walk.markStart(walk.parseCommit(up.getNewObjectId()));
