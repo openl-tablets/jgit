@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.openl.jgit</groupId>
     <artifactId>org.eclipse.jgit-parent</artifactId>
-    <version>6.1.0-SNAPSHOT</version>
+    <version>6.1.0.202205052000-r</version>
   </parent>
 
   <artifactId>org.eclipse.jgit.ssh.apache.test</artifactId>
