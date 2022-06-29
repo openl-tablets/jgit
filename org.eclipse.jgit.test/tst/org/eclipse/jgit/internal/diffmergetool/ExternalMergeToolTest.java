@@ -38,6 +38,7 @@ import java.util.Set;
 import org.eclipse.jgit.lib.internal.BooleanTriState;
 import org.eclipse.jgit.storage.file.FileBasedConfig;
 import org.eclipse.jgit.util.FS.ExecutionResult;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -81,6 +82,7 @@ public class ExternalMergeToolTest extends ExternalToolTestCase {
 				+ errorReturnCode);
 	}
 
+	@Ignore
 	@Test
 	public void testKdiff3() throws Exception {
 		assumePosixPlatform();
