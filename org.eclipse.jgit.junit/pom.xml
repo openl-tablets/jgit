@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.openl.jgit</groupId>
     <artifactId>org.eclipse.jgit-parent</artifactId>
-    <version>6.3.0.202209071007-openl</version>
+    <version>6.3.0.202209071007-openl-2</version>
   </parent>
 
   <artifactId>org.eclipse.jgit.junit</artifactId>
