@@ -925,7 +925,11 @@ public class FileUtils {
 		if (!isFile(file)) {
 			return false;
 		}
-		return Files.isExecutable(file.toPath());
+		try {
+			return Files.isExecutable(file.toPath());
+		} catch (SecurityException ex) {
+			return false;
+		}
 	}
 
 	/**
