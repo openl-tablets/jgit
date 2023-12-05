@@ -131,6 +131,26 @@ public class PushTest extends LfsServerTest {
 	}
 
 	@Test
+	public void testPushAllBranches() throws Exception {
+		git.branchCreate().setName("branch-1").call();
+		JGitTestUtil.writeTrashFile(localDb.getRepository(), "b.bin", "xyz");
+		git.add().addFilepattern("b.bin").call();
+		git.commit().setMessage("add lfs blob").call();
+
+		git.branchCreate().setName("branch-2").call();
+		JGitTestUtil.writeTrashFile(localDb.getRepository(), "b.bin", "abcdef");
+		git.add().addFilepattern("b.bin").call();
+		git.commit().setMessage("add lfs blob").call();
+
+		git.push().setPushAll().call();
+
+		assertEquals("[POST /lfs/objects/batch 200, " +
+						"PUT /lfs/objects/3608bca1e44ea6c4d268eb6db02260269892c0b42b86bbf1e77a6fa16c3c9282 200, " +
+						"PUT /lfs/objects/bef57ec7f53a6d40beb640a780a639c83bc29ac8a9816f1fc6c5c6dcd93c4721 200]",
+				server.getRequests().toString());
+	}
+
+	@Test
 	public void testDeleteBranch() throws Exception {
 		String branch = "new-branch";
 		git.branchCreate().setName(branch).call();
