@@ -158,6 +158,9 @@ public class ExternalMergeToolTest extends ExternalToolTestCase {
 
 	@Test
 	public void testUserDefinedToolWithCancelledPrompt() throws Exception {
+		FileBasedConfig config = db.getConfig();
+		config.setString(CONFIG_MERGE_SECTION, null, CONFIG_KEY_TOOL, "exit 1");
+
 		MergeTools manager = new MergeTools(db);
 
 		PromptHandler promptHandler = PromptHandler.cancelPrompt();
