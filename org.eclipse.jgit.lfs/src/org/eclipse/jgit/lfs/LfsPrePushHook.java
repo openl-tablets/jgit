@@ -10,11 +10,10 @@
 package org.eclipse.jgit.lfs;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.eclipse.jgit.lfs.Protocol.OPERATION_UPLOAD;
+import static org.eclipse.jgit.lfs.Protocol.*;
 import static org.eclipse.jgit.lfs.internal.LfsConnectionFactory.toRequest;
 import static org.eclipse.jgit.transport.http.HttpConnection.HTTP_OK;
-import static org.eclipse.jgit.util.HttpSupport.METHOD_POST;
-import static org.eclipse.jgit.util.HttpSupport.METHOD_PUT;
+import static org.eclipse.jgit.util.HttpSupport.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -219,7 +218,7 @@ public class LfsPrePushHook extends PrePushHook {
 					// received an object we didn't request
 					continue;
 				}
-				Protocol.Action uploadAction = o.actions.get(OPERATION_UPLOAD);
+				Protocol.Action uploadAction = o.actions.get(ACTION_UPLOAD);
 				if (uploadAction == null || uploadAction.href == null) {
 					continue;
 				}
@@ -231,6 +230,13 @@ public class LfsPrePushHook extends PrePushHook {
 							.format(LfsText.get().missingLocalObject, path));
 				}
 				uploadFile(o, uploadAction, path);
+
+				Protocol.Action verifyAction = o.actions.get(ACTION_VERIFY);
+				if (verifyAction != null) {
+					// Optional Verification according to
+					// https://github.com/git-lfs/git-lfs/blob/main/docs/api/basic-transfers.md
+					verifyFile(o, verifyAction);
+				}
 			}
 		}
 	}
@@ -260,6 +266,40 @@ public class LfsPrePushHook extends PrePushHook {
 			throw new IOException(MessageFormat.format(
 					LfsText.get().serverFailure, contentServer.getURL(),
 					Integer.valueOf(responseCode)));
+		}
+	}
+
+	/**
+	 * Do verification.
+	 * <pre>
+	 * > POST https://some-verify-callback.com
+	 * > Accept: application/vnd.git-lfs+json
+	 * > Content-Type: application/vnd.git-lfs+json
+	 * > Content-Length: 123
+	 * >
+	 * > {"oid": "{oid}", "size": 10000}
+	 * >
+	 * < HTTP/1.1 200 OK
+	 * </pre>
+	 *
+	 * For more information, visit https://github.com/git-lfs/git-lfs/blob/main/docs/api/basic-transfers.md
+	 */
+	private void verifyFile(Protocol.ObjectInfo o, Protocol.Action action) throws IOException {
+		var json = gson().toJson(o, ObjectSpec.class).getBytes(UTF_8);
+
+		var connection = LfsConnectionFactory.getLfsContentConnection(getRepository(), action, METHOD_POST);
+		connection.setRequestProperty(HDR_CONTENT_TYPE, CONTENTTYPE_VND_GIT_LFS_JSON);
+		connection.setRequestProperty(HDR_ACCEPT, CONTENTTYPE_VND_GIT_LFS_JSON);
+		connection.setFixedLengthStreamingMode(json.length);
+		connection.setDoOutput(true);
+
+		try (var out = connection.getOutputStream()) {
+			out.write(json);
+		}
+
+		int responseCode = connection.getResponseCode();
+		if (responseCode != HTTP_OK) {
+			throw new IOException(MessageFormat.format(LfsText.get().verifyFailure, o.oid, responseCode));
 		}
 	}
 }
