@@ -91,9 +91,11 @@ public class MergeToolTest extends ToolTestCase {
 
 		createMergeConflict();
 
-		String araxisErrorLine = "compare: unrecognized option `-wait' @ error/compare.c/CompareImageCommand/1123.";
-		String[] expectedErrorOutput = { araxisErrorLine, araxisErrorLine, };
-		runAndCaptureUsingInitRaw(Arrays.asList(expectedErrorOutput),
+		var expectedErrorOutput = Arrays.asList("No diff tool provided and no defaults configured.",
+				"merge of dir1/a failed",
+				"No diff tool provided and no defaults configured.",
+				"merge of dir2/b failed");
+		runAndCaptureUsingInitRaw(expectedErrorOutput,
 				MERGE_TOOL, "--no-prompt");
 	}
 
