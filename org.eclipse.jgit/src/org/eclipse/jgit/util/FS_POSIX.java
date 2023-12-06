@@ -203,7 +203,16 @@ public class FS_POSIX extends FS {
 	/** {@inheritDoc} */
 	@Override
 	public boolean canExecute(File f) {
-		return FileUtils.canExecute(f);
+		if (!isFile(f)) {
+			return false;
+		}
+		try {
+			Path path = FileUtils.toPath(f);
+			Set<PosixFilePermission> pset = Files.getPosixFilePermissions(path);
+			return pset.contains(PosixFilePermission.OWNER_EXECUTE);
+		} catch (IOException ex) {
+			return false;
+		}
 	}
 
 	/** {@inheritDoc} */
