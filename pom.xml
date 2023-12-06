@@ -18,7 +18,7 @@
   <groupId>org.openl.jgit</groupId>
   <artifactId>org.eclipse.jgit-parent</artifactId>
   <packaging>pom</packaging>
-  <version>6.8.1-SNAPSHOT</version>
+  <version>6.8.0.202311291450-openl</version>
 
   <name>JGit - Parent</name>
   <url>${jgit-url}</url>
@@ -116,7 +116,7 @@
     <java.version>11</java.version>
     <bundle-manifest>${project.build.directory}/META-INF/MANIFEST.MF</bundle-manifest>
 
-    <project.build.outputTimestamp>${commit.time.iso}</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2023-12-06T16:55:36Z</project.build.outputTimestamp>
 
     <jgit-last-release-version>6.7.0.202309050840-r</jgit-last-release-version>
     <ant-version>1.10.14</ant-version>
