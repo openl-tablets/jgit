@@ -50,6 +50,7 @@ import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.util.FS;
 import org.eclipse.jgit.util.FileUtils;
+import org.eclipse.jgit.util.LfsFactory;
 
 /**
  * Clone a repository into a new working directory
@@ -211,6 +212,7 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 			ShutdownHook.INSTANCE.unregister(shutdownListener);
 		}
 		try {
+			LfsFactory.setCredentialsProvider(credentialsProvider);
 			checkout(repository, fetchResult);
 		} catch (IOException ioe) {
 			repository.close();
@@ -218,6 +220,8 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		} catch (GitAPIException | RuntimeException e) {
 			repository.close();
 			throw e;
+		} finally {
+			LfsFactory.removeCredentialsProvider();
 		}
 		return new Git(repository, true);
 	}
