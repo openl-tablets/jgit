@@ -68,7 +68,7 @@ public class FileLfsRepository implements LargeFileRepository {
 	@Override
 	@Nullable
 	public Action getVerifyAction(AnyLongObjectId id) {
-		return null;
+		return getAction(id);
 	}
 
 	@Override
