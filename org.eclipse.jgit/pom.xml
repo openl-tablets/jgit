@@ -130,7 +130,7 @@
           <configuration>
               <oldVersion>
                   <dependency>
-                      <groupId>${project.groupId}</groupId>
+                      <groupId>org.eclipse.jgit</groupId>
                       <artifactId>${project.artifactId}</artifactId>
                       <version>${jgit-last-release-version}</version>
                   </dependency>
@@ -196,7 +196,7 @@
           <configuration>
               <oldVersion>
                   <dependency>
-                      <groupId>${project.groupId}</groupId>
+                      <groupId>org.eclipse.jgit</groupId>
                       <artifactId>${project.artifactId}</artifactId>
                       <version>${jgit-last-release-version}</version>
                   </dependency>
