@@ -129,6 +129,17 @@ public class FileLfsServlet extends HttpServlet {
 		}
 	}
 
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse rsp) throws IOException {
+		AnyLongObjectId id = getObjectToTransfer(req, rsp);
+		if (id != null) {
+			AsyncContext context = req.startAsync();
+			context.setTimeout(timeout);
+			req.getInputStream().setReadListener(new ObjectVerifyListener(
+					repository, context, req, rsp, id));
+		}
+	}
+
 	/**
 	 * Send an error response.
 	 *
