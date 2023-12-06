@@ -13,7 +13,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.jgit.lfs.Protocol.*;
 import static org.eclipse.jgit.lfs.internal.LfsConnectionFactory.toRequest;
 import static org.eclipse.jgit.transport.http.HttpConnection.HTTP_OK;
-import static org.eclipse.jgit.transport.http.HttpConnection.HTTP_CREATED;
 import static org.eclipse.jgit.util.HttpSupport.*;
 
 import java.io.IOException;
@@ -264,7 +263,8 @@ public class LfsPrePushHook extends PrePushHook {
 			}
 		}
 		int responseCode = contentServer.getResponseCode();
-		if (responseCode != HTTP_OK && responseCode != HTTP_CREATED) {
+		// Some vendors return 201 or 203 HTTP codes instead of 200 for successful file creation
+		if (responseCode < 200 || responseCode > 299) {
 			throw new IOException(MessageFormat.format(
 					LfsText.get().serverFailure, contentServer.getURL(),
 					Integer.valueOf(responseCode)));
@@ -300,7 +300,8 @@ public class LfsPrePushHook extends PrePushHook {
 		}
 
 		int responseCode = connection.getResponseCode();
-		if (responseCode != HTTP_OK) {
+		// Some vendors return 203 or 204 HTTP codes instead of 200 for successful validation
+		if (responseCode < 200 || responseCode > 299) {
 			throw new IOException(MessageFormat.format(LfsText.get().verifyFailure, o.oid, responseCode));
 		}
 	}
