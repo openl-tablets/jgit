@@ -29,8 +29,8 @@
   </licenses>
 
   <properties>
-    <java.version>17</java.version>
-    <tycho-version>4.0.11</tycho-version>
+    <java.version>11</java.version>
+    <tycho-version>4.0.7</tycho-version>
     <target-platform>jgit-4.32</target-platform>
     <project.build.outputTimestamp>${git.commit.time}</project.build.outputTimestamp>
   </properties>

@@ -10,11 +10,9 @@ java_library(
     # TODO(davido): we want here provided deps
     deps = [
         "//lib:jetty-http",
-        "//lib:jetty-io",
         "//lib:jetty-security",
         "//lib:jetty-server",
         "//lib:jetty-servlet",
-        "//lib:jetty-session",
         "//lib:jetty-util",
         "//lib:junit",
         "//lib:servlet-api",

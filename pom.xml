@@ -113,7 +113,7 @@
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>17</java.version>
+    <java.version>11</java.version>
     <bundle-manifest>${project.build.directory}/META-INF/MANIFEST.MF</bundle-manifest>
 
     <project.build.outputTimestamp>${commit.time.iso}</project.build.outputTimestamp>
@@ -129,9 +129,9 @@
     <args4j-version>2.37</args4j-version>
     <commons-compress-version>1.27.1</commons-compress-version>
     <osgi-core-version>6.0.0</osgi-core-version>
-    <servlet-api-version>6.1.0</servlet-api-version>
-    <jetty-version>12.0.16</jetty-version>
-    <japicmp-version>0.23.1</japicmp-version>
+    <servlet-api-version>4.0.4</servlet-api-version>
+    <jetty-version>10.0.21</jetty-version>
+    <japicmp-version>0.21.2</japicmp-version>
     <httpclient-version>4.5.14</httpclient-version>
     <httpcore-version>4.4.16</httpcore-version>
     <slf4j-version>1.7.36</slf4j-version>
@@ -479,7 +479,7 @@
           <failOnWarnings>true</failOnWarnings>
           <excludePackageNames>org.eclipse.jgit.http.test</excludePackageNames>
           <links>
-            <link>https://docs.oracle.com/en/java/javase/17/docs/api</link>
+            <link>https://docs.oracle.com/en/java/javase/11/docs/api</link>
           </links>
           <tags>
             <tag>
@@ -753,7 +753,7 @@
           <failOnWarnings>false</failOnWarnings>
           <excludePackageNames>org.eclipse.jgit.http.test</excludePackageNames>
           <links>
-            <link>https://docs.oracle.com/en/java/javase/17/docs/api</link>
+            <link>https://docs.oracle.com/en/java/javase/11/docs/api</link>
           </links>
           <tags>
             <tag>
@@ -915,14 +915,8 @@
       </dependency>
 
       <dependency>
-        <groupId>org.eclipse.jetty.ee10</groupId>
-        <artifactId>jetty-ee10-servlet</artifactId>
-        <version>${jetty-version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-session</artifactId>
+        <artifactId>jetty-servlet</artifactId>
         <version>${jetty-version}</version>
       </dependency>
 

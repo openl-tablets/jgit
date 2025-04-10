@@ -16,6 +16,10 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jgit.http.server.resolver.DefaultUploadPackFactory;
 import org.eclipse.jgit.junit.LocalDiskRepositoryTestCase;
 import org.eclipse.jgit.lib.Repository;
@@ -26,10 +30,6 @@ import org.eclipse.jgit.transport.resolver.ServiceNotEnabledException;
 import org.eclipse.jgit.transport.resolver.UploadPackFactory;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
 
 public class DefaultUploadPackFactoryTest extends LocalDiskRepositoryTestCase {
 	private Repository db;
@@ -129,7 +129,7 @@ public class DefaultUploadPackFactoryTest extends LocalDiskRepositoryTestCase {
 		private final String host;
 
 		R(String user, String host) {
-			super(Mockito.mock(HttpServletRequest.class));
+			super(new Request(null, null) /* can't pass null, sigh */);
 			this.user = user;
 			this.host = host;
 		}
