@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.blame.cache.BlameCache;
@@ -354,17 +355,59 @@ public class BlameGeneratorCacheTest extends RepositoryTestCase {
 		return join("\n", l);
 	}
 
-	private record EmittedRegion(ObjectId oid, int resultStart, int resultEnd)
-			implements Comparable<EmittedRegion> {
-		@Override
-		public int compareTo(EmittedRegion o) {
-			return resultStart - o.resultStart;
+	private static class EmittedRegion implements Comparable<EmittedRegion> {
+
+		private final ObjectId oid;
+		private final int resultStart;
+		private final int resultEnd;
+
+		public EmittedRegion(ObjectId oid, int resultStart, int resultEnd) {
+			this.oid = oid;
+			this.resultStart = resultStart;
+			this.resultEnd = resultEnd;
 		}
 
-		CacheRegion asCacheRegion() {
+		/**
+		 * Get the commit id of the region.
+		 * @return the commit id
+		 */
+		public int resultStart() {
+			return resultStart;
+		}
+
+		/**
+		 * Get the commit id of the region.
+		 * @return result end
+		 */
+		public int resultEnd() {
+			return resultEnd;
+		}
+
+		@Override
+		public int compareTo(EmittedRegion o) {
+			return Integer.compare(this.resultStart, o.resultStart);
+		}
+
+		public CacheRegion asCacheRegion() {
 			return new CacheRegion(FILE, oid, resultStart, resultEnd);
 		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+			EmittedRegion other = (EmittedRegion) obj;
+			return resultStart == other.resultStart &&
+				resultEnd == other.resultEnd &&
+				Objects.equals(oid, other.oid);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(oid, resultStart, resultEnd);
+		}
 	}
+
 
 	private static class InMemoryBlameCache implements BlameCache {
 
@@ -392,7 +435,28 @@ public class BlameGeneratorCacheTest extends RepositoryTestCase {
 			return "InMemoryCache: " + description;
 		}
 
-		record Key(String commitId, String path) {
+		static class Key {
+			private final String commitId;
+			private final String path;
+
+			public Key(String commitId, String path) {
+				this.commitId = commitId;
+				this.path = path;
+			}
+
+			@Override
+			public boolean equals(Object obj) {
+				if (this == obj) return true;
+				if (obj == null || getClass() != obj.getClass()) return false;
+				Key other = (Key) obj;
+				return Objects.equals(commitId, other.commitId) &&
+					Objects.equals(path, other.path);
+			}
+
+			@Override
+			public int hashCode() {
+				return Objects.hash(commitId, path);
+			}
 		}
 	}
 }

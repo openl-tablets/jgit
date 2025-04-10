@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jgit.internal.JGitText;
 import org.eclipse.jgit.internal.storage.file.PackIndex;
@@ -359,7 +360,40 @@ public class MultiPackIndexWriter {
 	}
 
 
-	private record OffsetPosition(long offset, int position) {
+	private static class OffsetPosition {
+		private final long offset;
+		private final int position;
+
+		public OffsetPosition(long offset, int position) {
+			this.offset = offset;
+			this.position = position;
+		}
+
+		public long offset() {
+			return offset;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+			OffsetPosition other = (OffsetPosition) obj;
+			return offset == other.offset &&
+				position == other.position;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(offset, position);
+		}
+
+		@Override
+		public String toString() {
+			return "OffsetPosition{" +
+				"offset=" + offset +
+				", position=" + position +
+				'}';
+		}
 	}
 
 	/**
@@ -401,7 +435,40 @@ public class MultiPackIndexWriter {
 		}
 	}
 
-	private record ChunkHeader(int chunkId, long size, ChunkWriter writerFn) {
+	private static class ChunkHeader {
+		private final int chunkId;
+		private final long size;
+		private final ChunkWriter writerFn;
+
+		public ChunkHeader(int chunkId, long size, ChunkWriter writerFn) {
+			this.chunkId = chunkId;
+			this.size = size;
+			this.writerFn = writerFn;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+			ChunkHeader other = (ChunkHeader) obj;
+			return chunkId == other.chunkId &&
+				size == other.size &&
+				Objects.equals(writerFn, other.writerFn);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(chunkId, size, writerFn);
+		}
+
+		@Override
+		public String toString() {
+			return "ChunkHeader{" +
+				"chunkId=" + chunkId +
+				", size=" + size +
+				", writerFn=" + writerFn +
+				'}';
+		}
 	}
 
 	@FunctionalInterface

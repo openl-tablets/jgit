@@ -86,12 +86,21 @@ class OpenSshBinaryKrl {
 	/**
 	 * A byte array that can be used as a key in a {@link Map} or {@link Set}.
 	 * {@link #equals(Object)} and {@link #hashCode()} are based on the content.
-	 *
-	 * @param blob
-	 *            the array to wrap
 	 */
 	@SuppressWarnings("ArrayRecordComponent")
-	private static record Blob(byte[] blob) {
+	private static class Blob {
+		private final byte[] blob;
+
+		/**
+		 * A byte array that can be used as a key in a {@link Map} or {@link Set}.
+		 * {@link #equals(Object)} and {@link #hashCode()} are based on the content.
+		 *
+		 * @param blob
+		 *            the array to wrap
+		 */
+		public Blob(byte[] blob) {
+			this.blob = blob;
+		}
 
 		@Override
 		public final boolean equals(Object any) {
@@ -108,6 +117,13 @@ class OpenSshBinaryKrl {
 		@Override
 		public final int hashCode() {
 			return Arrays.hashCode(blob);
+		}
+
+		@Override
+		public String toString() {
+			return "Blob{" +
+				"blob=" + Arrays.toString(blob) +
+				'}';
 		}
 	}
 
@@ -129,7 +145,8 @@ class OpenSshBinaryKrl {
 	 * @return {@code true} if the key was revoked, {@code false} otherwise
 	 */
 	boolean isRevoked(PublicKey key) {
-		if (key instanceof OpenSshCertificate certificate) {
+		if (key instanceof OpenSshCertificate) {
+			OpenSshCertificate certificate = (OpenSshCertificate) key;
 			if (certificates.isEmpty()) {
 				return false;
 			}

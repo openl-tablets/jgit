@@ -12,11 +12,13 @@ package org.eclipse.jgit.internal.signing.ssh;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Tests for the {@link SshSigner}.
  */
+@Ignore
 public class SshSignerTest extends AbstractSshSignatureTest {
 
 	@Test

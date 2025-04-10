@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.eclipse.jgit.errors.CorruptObjectException;
@@ -40,12 +41,40 @@ public class FakeIndexFactory {
 	/**
 	 * An object for the fake index
 	 *
-	 * @param name
-	 *            a sha1
-	 * @param offset
-	 *            the (fake) position of the object in the pack
 	 */
-	public record IndexObject(String name, long offset) {
+	public static class IndexObject {
+		private final String name;
+		private final long offset;
+
+		/**
+		 * An object for the fake index
+		 *
+		 * @param name
+		 *            a sha1
+		 * @param offset
+		 *            the (fake) position of the object in the pack
+		 */
+		public IndexObject(String name, long offset) {
+			this.name = name;
+			this.offset = offset;
+		}
+
+		/**
+		 * Name (sha1) of the object
+		 * @return name (sha1) of the object
+		 */
+		public String name() {
+			return name;
+		}
+
+		/**
+		 * Offset of the object in the pack
+		 * @return offset of the object in the pack
+		 */
+		public long offset() {
+			return offset;
+		}
+
 		/**
 		 * Name (sha1) as an objectId
 		 *
@@ -53,6 +82,20 @@ public class FakeIndexFactory {
 		 */
 		public ObjectId getObjectId() {
 			return ObjectId.fromString(name);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+			IndexObject other = (IndexObject) obj;
+			return offset == other.offset &&
+				Objects.equals(name, other.name);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(name, offset);
 		}
 	}
 
