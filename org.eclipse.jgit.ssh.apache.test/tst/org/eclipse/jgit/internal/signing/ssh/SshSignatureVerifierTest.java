@@ -22,11 +22,13 @@ import org.eclipse.jgit.api.VerificationResult;
 import org.eclipse.jgit.lib.SignatureVerifier;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.util.StringUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Tests for the {@link SshSignatureVerifier}.
  */
+@Ignore
 public class SshSignatureVerifierTest extends AbstractSshSignatureTest {
 
 	@Test

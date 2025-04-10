@@ -15,6 +15,7 @@ import static org.eclipse.jgit.internal.storage.midx.MultiPackIndexConstants.CHU
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.util.NB;
@@ -58,21 +59,31 @@ public class MultiPackIndexPrettyPrinter {
 			out.printf("Starting chunk: %s @ %d%n", segment.chunkName(),
 					segment.startOffset());
 			switch (segment.chunkName()) {
-				case "OIDF" -> current = printOIDF(out, rawMidx, current);
-				case "OIDL" -> current = printOIDL(out, rawMidx, current,
-						chunkSegments.get(i + 1).startOffset);
-				case "OOFF" -> current = printOOFF(out, rawMidx, current,
-						chunkSegments.get(i + 1).startOffset);
-				case "PNAM" -> current = printPNAM(out, rawMidx, current,
-						chunkSegments.get(i + 1).startOffset);
-				case "RIDX" -> current = printRIDX(out, rawMidx, current,
-						chunkSegments.get(i + 1).startOffset);
-				default -> {
+				case "OIDF":
+					current = printOIDF(out, rawMidx, current);
+					break;
+				case "OIDL":
+					current = printOIDL(out, rawMidx, current,
+						chunkSegments.get(i + 1).startOffset());
+					break;
+				case "OOFF":
+					current = printOOFF(out, rawMidx, current,
+						chunkSegments.get(i + 1).startOffset());
+					break;
+				case "PNAM":
+					current = printPNAM(out, rawMidx, current,
+						chunkSegments.get(i + 1).startOffset());
+					break;
+				case "RIDX":
+					current = printRIDX(out, rawMidx, current,
+						chunkSegments.get(i + 1).startOffset());
+					break;
+				default:
 					out.printf(
-							"Skipping %s (don't know how to print it yet)%n",
-							segment.chunkName());
+						"Skipping %s (don't know how to print it yet)%n",
+						segment.chunkName());
 					current = (int) chunkSegments.get(i + 1).startOffset();
-				}
+					break;
 			}
 		}
 		// Checksum is a SHA-1, use ObjectId to parse it
@@ -151,6 +162,43 @@ public class MultiPackIndexPrettyPrinter {
 		return (int) end;
 	}
 
-	private record ChunkSegment(String chunkName, long startOffset) {
+	private static class ChunkSegment {
+		private final String chunkName;
+		private final long startOffset;
+
+		public ChunkSegment(String chunkName, long startOffset) {
+			this.chunkName = chunkName;
+			this.startOffset = startOffset;
+		}
+
+		public String chunkName() {
+			return chunkName;
+		}
+
+		public long startOffset() {
+			return startOffset;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+			ChunkSegment other = (ChunkSegment) obj;
+			return startOffset == other.startOffset &&
+				Objects.equals(chunkName, other.chunkName);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(chunkName, startOffset);
+		}
+
+		@Override
+		public String toString() {
+			return "ChunkSegment{" +
+				"chunkName='" + chunkName + '\'' +
+				", startOffset=" + startOffset +
+				'}';
+		}
 	}
 }

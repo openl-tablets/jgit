@@ -9,6 +9,7 @@
  */
 package org.eclipse.jgit.internal.signing.ssh;
 
+import java.util.Objects;
 import java.util.TreeMap;
 
 import org.eclipse.jgit.internal.transport.sshd.SshdText;
@@ -29,23 +30,83 @@ class SerialRangeSet {
 		long to();
 	}
 
-	private static record Singleton(long from) implements SerialRange {
+	private static class Singleton implements SerialRange {
+		private final long from;
+
+		public Singleton(long from) {
+			this.from = from;
+		}
+
+		public long from() {
+			return from;
+		}
 
 		@Override
 		public long to() {
 			return from;
 		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+			Singleton other = (Singleton) obj;
+			return from == other.from;
+		}
+
+		@Override
+		public int hashCode() {
+			return Long.hashCode(from);
+		}
+
+		@Override
+		public String toString() {
+			return "Singleton{" +
+				"from=" + from +
+				'}';
+		}
 	}
 
-	private static record Range(long from, long to) implements SerialRange {
+	private static class Range implements SerialRange {
+		private final long from;
+		private final long to;
 
 		public Range(long from, long to) {
 			if (Long.compareUnsigned(from, to) > 0) {
 				throw new IllegalArgumentException(
-						SshdText.get().signKrlEmptyRange);
+					SshdText.get().signKrlEmptyRange);
 			}
 			this.from = from;
 			this.to = to;
+		}
+
+		public long from() {
+			return from;
+		}
+
+		public long to() {
+			return to;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+			Range other = (Range) obj;
+			return from == other.from && to == other.to;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(from, to);
+		}
+
+		@Override
+		public String toString() {
+			return "Range{" +
+				"from=" + from +
+				", to=" + to +
+				'}';
 		}
 	}
 

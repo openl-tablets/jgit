@@ -23,6 +23,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.sshd.certificate.OpenSshCertificateBuilder;
 import org.apache.sshd.common.SshConstants;
@@ -503,7 +504,7 @@ public class OpenSshServerKeyDatabaseTest {
 
 	private void assertFile(Path path, List<String> lines) throws Exception {
 		assertEquals(lines, Files.readAllLines(path).stream()
-				.filter(s -> !s.isBlank()).toList());
+				.filter(s -> !s.isBlank()).collect(Collectors.toList()));
 	}
 
 	private static class TestCredentialsProvider extends CredentialsProvider {

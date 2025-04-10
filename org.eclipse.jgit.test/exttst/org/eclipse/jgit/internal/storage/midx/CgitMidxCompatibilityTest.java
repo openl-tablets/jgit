@@ -203,6 +203,42 @@ public class CgitMidxCompatibilityTest extends SampleDataRepositoryTestCase {
 		}
 	}
 
-	private record ChunkSegment(int id, long offset) {
+	private static class ChunkSegment {
+		private final int id;
+		private final long offset;
+
+		public ChunkSegment(int id, long offset) {
+			this.id = id;
+			this.offset = offset;
+		}
+
+		public int id() {
+			return id;
+		}
+
+		public long offset() {
+			return offset;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+			ChunkSegment other = (ChunkSegment) obj;
+			return id == other.id && offset == other.offset;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(id, offset);
+		}
+
+		@Override
+		public String toString() {
+			return "ChunkSegment{" +
+				"id=" + id +
+				", offset=" + offset +
+				'}';
+		}
 	}
 }

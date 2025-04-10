@@ -62,39 +62,96 @@ public interface SignatureVerifier {
 	/**
 	 * A {@code SignatureVerification} returns data about a (positively or
 	 * negatively) verified signature.
-	 *
-	 * @param verifierName
-	 *            the name of the verifier that created this verification result
-	 * @param creationDate
-	 *            date and time the signature was created
-	 * @param signer
-	 *            the signer as stored in the signature, or {@code null} if
-	 *            unknown
-	 * @param keyFingerprint
-	 *            fingerprint of the public key, or {@code null} if unknown
-	 * @param keyUser
-	 *            user associated with the key, or {@code null} if unknown
-	 * @param verified
-	 *            whether the signature verification was successful
-	 * @param expired
-	 *            whether the public key used for this signature verification
-	 *            was expired when the signature was created
-	 * @param trustLevel
-	 *            the trust level of the public key used to verify the signature
-	 * @param message
-	 *            human-readable message giving additional information about the
-	 *            outcome of the verification, possibly {@code null}
 	 */
-	record SignatureVerification(
-			String verifierName,
-			Date creationDate,
-			String signer,
-			String keyFingerprint,
-			String keyUser,
-			boolean verified,
-			boolean expired,
-			@NonNull TrustLevel trustLevel,
-			String message) {
+	class SignatureVerification {
+
+		private final String verifierName;
+		private final Date creationDate;
+		private final String signer;
+		private final String keyFingerprint;
+		private final String keyUser;
+		private final boolean verified;
+		private final boolean expired;
+		private final @NonNull TrustLevel trustLevel;
+		private final String message;
+
+		/**
+		 * A {@code SignatureVerification} returns data about a (positively or
+		 * negatively) verified signature.
+		 *
+		 * @param verifierName
+		 *            the name of the verifier that created this verification result
+		 * @param creationDate
+		 *            date and time the signature was created
+		 * @param signer
+		 *            the signer as stored in the signature, or {@code null} if
+		 *            unknown
+		 * @param keyFingerprint
+		 *            fingerprint of the public key, or {@code null} if unknown
+		 * @param keyUser
+		 *            user associated with the key, or {@code null} if unknown
+		 * @param verified
+		 *            whether the signature verification was successful
+		 * @param expired
+		 *            whether the public key used for this signature verification
+		 *            was expired when the signature was created
+		 * @param trustLevel
+		 *            the trust level of the public key used to verify the signature
+		 * @param message
+		 *            human-readable message giving additional information about the
+		 *            outcome of the verification, possibly {@code null}
+		 */
+		public SignatureVerification(String verifierName, Date creationDate, String signer, String keyFingerprint,
+									 String keyUser, boolean verified, boolean expired,
+									 @NonNull TrustLevel trustLevel, String message) {
+			this.verifierName = verifierName;
+			this.creationDate = creationDate;
+			this.signer = signer;
+			this.keyFingerprint = keyFingerprint;
+			this.keyUser = keyUser;
+			this.verified = verified;
+			this.expired = expired;
+			this.trustLevel = trustLevel;
+			this.message = message;
+		}
+
+		public String verifierName() {
+			return verifierName;
+		}
+
+		public Date creationDate() {
+			return creationDate;
+		}
+
+		public String signer() {
+			return signer;
+		}
+
+		public String keyFingerprint() {
+			return keyFingerprint;
+		}
+
+		public String keyUser() {
+			return keyUser;
+		}
+
+		public boolean verified() {
+			return verified;
+		}
+
+		public boolean expired() {
+			return expired;
+		}
+
+		public @NonNull TrustLevel trustLevel() {
+			return trustLevel;
+		}
+
+		public String message() {
+			return message;
+		}
+
+		// Optionally override equals, hashCode, and toString if needed
 	}
 
 	/**

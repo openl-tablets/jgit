@@ -45,8 +45,8 @@ public final class SigningDatabase {
 			SigningKeyDatabase database) {
 		SigningKeyDatabase previous = INSTANCE;
 		if (database != INSTANCE) {
-			if (INSTANCE instanceof CachingSigningKeyDatabase caching) {
-				caching.clearCache();
+			if (INSTANCE instanceof CachingSigningKeyDatabase) {
+				((CachingSigningKeyDatabase) INSTANCE).clearCache();
 			}
 			if (database == null) {
 				INSTANCE = new OpenSshSigningKeyDatabase();

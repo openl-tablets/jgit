@@ -80,10 +80,48 @@ final class AllowedSigners extends ModifiableFileWatcher {
 			.not(CERTIFICATES);
 
 	@SuppressWarnings("ArrayRecordComponent")
-	static record AllowedEntry(String[] identities, boolean isCA,
-			String[] namespaces, Instant validAfter, Instant validBefore,
-			String key) {
-		// Empty
+	static class AllowedEntry {
+		private final String[] identities;
+		private final boolean isCA;
+		private final String[] namespaces;
+		private final Instant validAfter;
+		private final Instant validBefore;
+		private final String key;
+
+		public AllowedEntry(String[] identities, boolean isCA,
+							String[] namespaces, Instant validAfter,
+							Instant validBefore, String key) {
+			this.identities = identities;
+			this.isCA = isCA;
+			this.namespaces = namespaces;
+			this.validAfter = validAfter;
+			this.validBefore = validBefore;
+			this.key = key;
+		}
+
+		public String[] identities() {
+			return identities;
+		}
+
+		public boolean isCA() {
+			return isCA;
+		}
+
+		public String[] namespaces() {
+			return namespaces;
+		}
+
+		public Instant validAfter() {
+			return validAfter;
+		}
+
+		public Instant validBefore() {
+			return validBefore;
+		}
+
+		public String key() {
+			return key;
+		}
 
 		@Override
 		public final boolean equals(Object any) {
@@ -95,11 +133,11 @@ final class AllowedSigners extends ModifiableFileWatcher {
 			}
 			AllowedEntry other = (AllowedEntry) any;
 			return isCA == other.isCA
-					&& Arrays.equals(identities, other.identities)
-					&& Arrays.equals(namespaces, other.namespaces)
-					&& Objects.equals(validAfter, other.validAfter)
-					&& Objects.equals(validBefore, other.validBefore)
-					&& Objects.equals(key, other.key);
+				&& Arrays.equals(identities, other.identities)
+				&& Arrays.equals(namespaces, other.namespaces)
+				&& Objects.equals(validAfter, other.validAfter)
+				&& Objects.equals(validBefore, other.validBefore)
+				&& Objects.equals(key, other.key);
 		}
 
 		@Override
@@ -111,8 +149,36 @@ final class AllowedSigners extends ModifiableFileWatcher {
 		}
 	}
 
-	private static record State(Map<String, List<AllowedEntry>> entries) {
-		// Empty
+	private static class State {
+		private final Map<String, List<AllowedEntry>> entries;
+
+		public State(Map<String, List<AllowedEntry>> entries) {
+			this.entries = entries;
+		}
+
+		public Map<String, List<AllowedEntry>> entries() {
+			return entries;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+			State other = (State) obj;
+			return Objects.equals(entries, other.entries);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(entries);
+		}
+
+		@Override
+		public String toString() {
+			return "State{" +
+				"entries=" + entries +
+				'}';
+		}
 	}
 
 	private State state;
@@ -126,7 +192,8 @@ final class AllowedSigners extends ModifiableFileWatcher {
 			Instant time) throws IOException, VerificationException {
 		State currentState = refresh();
 		PublicKey keyToCheck = key;
-		if (key instanceof OpenSshCertificate certificate) {
+		if (key instanceof OpenSshCertificate) {
+			var certificate = (OpenSshCertificate) key;
 			AllowedEntry entry = find(currentState, certificate.getCaPubKey(),
 					namespace, name, time, CERTIFICATES);
 			if (entry != null) {
@@ -524,7 +591,43 @@ final class AllowedSigners extends ModifiableFileWatcher {
 		return new Dequoted(line.substring(from, i), i);
 	}
 
-	static record Dequoted(String value, int after) {
-		// Empty
+	static class Dequoted {
+		private final String value;
+		private final int after;
+
+		public Dequoted(String value, int after) {
+			this.value = value;
+			this.after = after;
+		}
+
+		public String value() {
+			return value;
+		}
+
+		public int after() {
+			return after;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+			Dequoted other = (Dequoted) obj;
+			return after == other.after &&
+				Objects.equals(value, other.value);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(value, after);
+		}
+
+		@Override
+		public String toString() {
+			return "Dequoted{" +
+				"value='" + value + '\'' +
+				", after=" + after +
+				'}';
+		}
 	}
 }
