@@ -13,16 +13,19 @@ package org.eclipse.jgit.http.test;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
-import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import java.util.List;
+
+import javax.servlet.ServletException;
+
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jgit.http.server.GitServlet;
 import org.eclipse.jgit.junit.http.AppServer;
 import org.eclipse.jgit.junit.http.MockServletConfig;
 import org.eclipse.jgit.junit.http.RecordingLogger;
 import org.junit.After;
 import org.junit.Test;
-
-import jakarta.servlet.ServletException;
 
 public class GitServletInitTest {
 	private AppServer server;
@@ -72,14 +75,14 @@ public class GitServletInitTest {
 			server.setUp();
 		} catch (Exception e) {
 			Throwable why = null;
-			Throwable[] reasons = e.getSuppressed();
-			if (reasons.length > 0) {
-				why = reasons[0];
+			if (e instanceof MultiException) {
+				MultiException multi = (MultiException) e;
+				List<Throwable> reasons = multi.getThrowables();
+				why = reasons.get(0);
 				assertTrue("Expected ServletException",
 						why instanceof ServletException);
-			} else if (e instanceof ServletException) {
+			} else if (e instanceof ServletException)
 				why = e;
-			}
 
 			if (why != null) {
 				assertTrue("Wanted base-path",
