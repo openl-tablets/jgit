@@ -233,9 +233,6 @@ public class LfsConnectionFactory {
 						.proxyFor(ProxySelector.getDefault(), contentUrl));
 		contentServerConn.setRequestMethod(method);
 
-		// Set Authorization header by default. It can be rewritten by headers from the action.
-		fillAuthorizationHeader(contentServerConn);
-
 		if (action.header != null) {
 			action.header.forEach(
 					(k, v) -> contentServerConn.setRequestProperty(k, v));
@@ -291,7 +288,12 @@ public class LfsConnectionFactory {
 		return req;
 	}
 
-	private static void fillAuthorizationHeader(HttpConnection connection) {
+	/**
+	 * Fill the Authorization header of the given connection with
+	 *
+	 * @param connection the connection to fill the header for
+	 */
+	public static void fillAuthorizationHeader(HttpConnection connection) {
 		CredentialsProvider provider = LfsFactory.getCredentialsProvider();
 
 		if (provider == null) {
