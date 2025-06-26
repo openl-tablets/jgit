@@ -250,24 +250,35 @@ public class LfsPrePushHook extends PrePushHook {
 	private void uploadFile(Protocol.ObjectInfo o,
 			Protocol.Action uploadAction, Path path)
 			throws IOException, CorruptMediaFile {
+		int responseCode = sendUploadFileRequest(o, uploadAction, path, false);
+		if (responseCode == 401) {
+			// If the server returns 401 Unauthorized, we need to re-send the request with authentication
+			responseCode = sendUploadFileRequest(o, uploadAction, path, true);
+		}
+		// Some vendors return 201 or 203 HTTP codes instead of 200 for successful file creation
+		if (responseCode < 200 || responseCode > 299) {
+			throw new IOException(MessageFormat.format(
+					LfsText.get().serverFailure, uploadAction.href,
+					Integer.valueOf(responseCode)));
+		}
+	}
+
+	private int sendUploadFileRequest(Protocol.ObjectInfo o, Protocol.Action uploadAction, Path path, boolean addAuth) throws IOException {
 		HttpConnection contentServer = LfsConnectionFactory
-				.getLfsContentConnection(getRepository(), uploadAction,
-						METHOD_PUT);
+			.getLfsContentConnection(getRepository(), uploadAction,
+				METHOD_PUT);
+		if (addAuth) {
+			LfsConnectionFactory.fillAuthorizationHeader(contentServer);
+		}
 		contentServer.setDoOutput(true);
 		try (OutputStream out = contentServer
-				.getOutputStream()) {
+			.getOutputStream()) {
 			long size = Files.copy(path, out);
 			if (size != o.size) {
 				throw new CorruptMediaFile(path, o.size, size);
 			}
 		}
-		int responseCode = contentServer.getResponseCode();
-		// Some vendors return 201 or 203 HTTP codes instead of 200 for successful file creation
-		if (responseCode < 200 || responseCode > 299) {
-			throw new IOException(MessageFormat.format(
-					LfsText.get().serverFailure, contentServer.getURL(),
-					Integer.valueOf(responseCode)));
-		}
+		return contentServer.getResponseCode();
 	}
 
 	/*
@@ -288,7 +299,24 @@ public class LfsPrePushHook extends PrePushHook {
 	private void verifyFile(Protocol.ObjectInfo o, Protocol.Action action) throws IOException {
 		var json = gson().toJson(o, ObjectSpec.class).getBytes(UTF_8);
 
+		int responseCode = sendVerificationRequest(o, action, json, false);
+		// If the server returns 401 Unauthorized, we need to re-send the request with authentication
+		if (responseCode == 401) {
+			responseCode = sendVerificationRequest(o, action, json, true);
+		}
+		// Some vendors return 203 or 204 HTTP codes instead of 200 for successful validation
+		if (responseCode < 200 || responseCode > 299) {
+			throw new IOException(MessageFormat.format(LfsText.get().verifyFailure, o.oid, responseCode));
+		}
+	}
+
+	private int sendVerificationRequest(Protocol.ObjectInfo o, Protocol.Action action, byte[] json, boolean addAuth) throws IOException {
 		var connection = LfsConnectionFactory.getLfsContentConnection(getRepository(), action, METHOD_POST);
+
+		if (addAuth) {
+			LfsConnectionFactory.fillAuthorizationHeader(connection);
+		}
+
 		connection.setRequestProperty(HDR_CONTENT_TYPE, CONTENTTYPE_VND_GIT_LFS_JSON);
 		connection.setRequestProperty(HDR_ACCEPT, CONTENTTYPE_VND_GIT_LFS_JSON);
 		connection.setFixedLengthStreamingMode(json.length);
@@ -298,10 +326,6 @@ public class LfsPrePushHook extends PrePushHook {
 			out.write(json);
 		}
 
-		int responseCode = connection.getResponseCode();
-		// Some vendors return 203 or 204 HTTP codes instead of 200 for successful validation
-		if (responseCode < 200 || responseCode > 299) {
-			throw new IOException(MessageFormat.format(LfsText.get().verifyFailure, o.oid, responseCode));
-		}
+		return connection.getResponseCode();
 	}
 }
