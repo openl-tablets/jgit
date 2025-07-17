@@ -18,7 +18,7 @@
   <groupId>org.openl.jgit</groupId>
   <artifactId>org.eclipse.jgit-parent</artifactId>
   <packaging>pom</packaging>
-  <version>7.3.1-SNAPSHOT</version>
+  <version>7.3.0.202506031305-openl</version>
 
   <name>JGit - Parent</name>
   <url>${jgit-url}</url>
@@ -670,7 +670,7 @@
               <scripts>
                 <script><![CDATA[
                   @Grapes([
-                    @Grab(group='org.eclipse.jgit', module='org.eclipse.jgit', version='6.7.0.202309050840-r')
+                    @Grab(group='org.eclipse.jgit', module='org.eclipse.jgit', version='7.2.0.202503040940-r')
                   ])
                   import java.time.Instant
                   import java.time.ZoneId
