@@ -11,8 +11,6 @@
 package org.eclipse.jgit.nls;
 
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jgit.errors.TranslationBundleLoadingException;
 import org.eclipse.jgit.errors.TranslationStringMissingException;
@@ -42,7 +40,16 @@ public class NLS {
 	 */
 	public static final Locale ROOT_LOCALE = new Locale("", "", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
-	private static final InheritableThreadLocal<NLS> local = new InheritableThreadLocal<>();
+	/**
+	 * The per-thread locale. Only a {@link Locale} (loaded by the bootstrap
+	 * class loader) is stored here, never an {@code NLS} instance, so that a
+	 * thread which touches NLS does not retain the class loader that loaded the
+	 * {@code NLS} class. This matters in servlet containers, where retaining the
+	 * web-application class loader on a long-lived container thread is a memory
+	 * leak (see Eclipse bug 550529). The actual translation bundles are held by
+	 * the static {@link GlobalBundleCache}, which {@link #clear()} releases.
+	 */
+	private static final InheritableThreadLocal<Locale> local = new InheritableThreadLocal<>();
 
 	/**
 	 * Sets the locale for the calling thread.
@@ -56,7 +63,7 @@ public class NLS {
 	 *            the preferred locale
 	 */
 	public static void setLocale(Locale locale) {
-		local.set(new NLS(locale));
+		local.set(locale);
 	}
 
 	/**
@@ -66,15 +73,7 @@ public class NLS {
 	 * <code>NLS.setLocale(Locale.getDefault())</code>.
 	 */
 	public static void useJVMDefaultLocale() {
-		useJVMDefaultInternal();
-	}
-
-	// TODO(ms): change signature of public useJVMDefaultLocale() in 5.0 to get
-	// rid of this internal method
-	private static NLS useJVMDefaultInternal() {
-		NLS b = new NLS(Locale.getDefault());
-		local.set(b);
-		return b;
+		local.remove();
 	}
 
 	/**
@@ -96,11 +95,11 @@ public class NLS {
 	 *                {@link org.eclipse.jgit.errors.TranslationStringMissingException}
 	 */
 	public static <T extends TranslationBundle> T getBundleFor(Class<T> type) {
-		NLS b = local.get();
-		if (b == null) {
-			b = useJVMDefaultInternal();
+		Locale locale = local.get();
+		if (locale == null) {
+			locale = Locale.getDefault();
 		}
-		return b.get(type);
+		return GlobalBundleCache.lookupBundle(locale, type);
 	}
 
 	/**
@@ -112,25 +111,10 @@ public class NLS {
 		GlobalBundleCache.clear();
 	}
 
-	private final Locale locale;
-
-	private final Map<Class, TranslationBundle> map = new ConcurrentHashMap<>();
-
-	private NLS(Locale locale) {
-		this.locale = locale;
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T extends TranslationBundle> T get(Class<T> type) {
-		TranslationBundle bundle = map.get(type);
-		if (bundle == null) {
-			bundle = GlobalBundleCache.lookupBundle(locale, type);
-			// There is a small opportunity for a race, which we may
-			// lose. Accept defeat and return the winner's instance.
-			TranslationBundle old = map.putIfAbsent(type, bundle);
-			if (old != null)
-				bundle = old;
-		}
-		return (T) bundle;
+	private NLS() {
+		// This class is not intended to be instantiated; it only holds static
+		// state. A private constructor keeps it from being subclassed or
+		// instantiated, and ensures no NLS instance is ever stored in the
+		// thread-local (see {@link #local}).
 	}
 }

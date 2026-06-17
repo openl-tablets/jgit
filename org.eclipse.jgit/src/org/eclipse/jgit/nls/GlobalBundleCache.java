@@ -26,10 +26,9 @@ import org.eclipse.jgit.errors.TranslationStringMissingException;
  * (same locale and type) from the same or a different thread will return the
  * cached one.
  * <p>
- * Note that NLS instances maintain per-thread Map of loaded translation
- * bundles. Once a thread accesses a translation bundle it will keep reference
- * to it and will not call {@link #lookupBundle(Locale, Class)} again for the
- * same translation bundle as long as its locale doesn't change.
+ * This static cache is the only place translation bundles are retained;
+ * {@link NLS} stores only a {@link Locale} per thread and resolves bundles
+ * through {@link #lookupBundle(Locale, Class)} on every call.
  */
 class GlobalBundleCache {
 	private static final Map<Locale, Map<Class, TranslationBundle>> cachedBundles

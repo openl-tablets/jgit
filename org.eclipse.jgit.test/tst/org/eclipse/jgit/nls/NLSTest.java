@@ -11,8 +11,11 @@
 package org.eclipse.jgit.nls;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
@@ -25,6 +28,48 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 public class NLSTest {
+
+	/**
+	 * Tomcat's leak detector flags any thread-local value whose class was
+	 * loaded by the web-application class loader. After a thread runs a git
+	 * operation, the value it leaves in NLS's thread-local must be a
+	 * {@link Locale} (bootstrap-loaded), never an {@link NLS} instance, so the
+	 * web-application class loader is not retained. See Eclipse bug 550529.
+	 */
+	@Test
+	public void testNoNLSValueRetainedOnWorkerThread()
+			throws InterruptedException, ExecutionException {
+		ExecutorService pool = Executors.newSingleThreadExecutor();
+		try {
+			Future<Object> retained = pool.submit(() -> {
+				NLS.setLocale(Locale.GERMAN);
+				GermanTranslatedBundle.get();
+				return threadLocalValue();
+			});
+			Object value = retained.get();
+			assertFalse(
+					"worker thread must not retain an NLS value in its thread-local",
+					value instanceof NLS);
+			assertTrue(
+					"worker thread must retain only a Locale in its thread-local",
+					value instanceof Locale);
+		} finally {
+			pool.shutdown();
+			pool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+		}
+	}
+
+	/**
+	 * Returns the value the calling thread currently holds in NLS's private
+	 * thread-local. Reflecting on NLS (an application class) is permitted by the
+	 * module system, unlike reflecting on {@link Thread}'s internal maps.
+	 */
+	private static Object threadLocalValue() throws ReflectiveOperationException {
+		Field localField = NLS.class.getDeclaredField("local");
+		localField.setAccessible(true);
+		ThreadLocal<?> local = (ThreadLocal<?>) localField.get(null);
+		return local.get();
+	}
 
 	@Test
 	public void testNLSLocale() {
