@@ -13,7 +13,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.jgit.lfs.Protocol.*;
 import static org.eclipse.jgit.lfs.internal.LfsConnectionFactory.toRequest;
 import static org.eclipse.jgit.transport.http.HttpConnection.HTTP_OK;
-import static org.eclipse.jgit.transport.http.HttpConnection.HTTP_CREATED;
 import static org.eclipse.jgit.util.HttpSupport.*;
 
 import java.io.IOException;
