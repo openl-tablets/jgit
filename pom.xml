@@ -114,6 +114,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>17</java.version>
+    <!-- The OpenL fork is published under groupId org.openl.jgit, which the Eclipse IP database does not know,
+         so the Dash license check would flag every reactor artifact as unvetted third-party content. -->
+    <dash.skip>true</dash.skip>
     <bundle-manifest>${project.build.directory}/META-INF/MANIFEST.MF</bundle-manifest>
 
     <project.build.outputTimestamp>${commit.time.iso}</project.build.outputTimestamp>
