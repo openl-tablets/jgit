@@ -180,6 +180,11 @@ public class JDKHttpConnection implements HttpConnection {
 	}
 
 	@Override
+	public void setFixedLengthStreamingMode(long contentLength) {
+		wrappedUrlConnection.setFixedLengthStreamingMode(contentLength);
+	}
+
+	@Override
 	public OutputStream getOutputStream() throws IOException {
 		return wrappedUrlConnection.getOutputStream();
 	}
