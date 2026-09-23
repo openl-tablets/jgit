@@ -61,6 +61,8 @@ import com.google.gson.stream.JsonReader;
 public class LfsPrePushHook extends PrePushHook {
 
 	private static final String EMPTY = ""; //$NON-NLS-1$
+	private static final String HDR_TRANSFER_ENCODING = "Transfer-Encoding"; //$NON-NLS-1$
+	private static final String CHUNKED = "chunked"; //$NON-NLS-1$
 	private Collection<RemoteRefUpdate> refs;
 
 	/**
@@ -271,7 +273,11 @@ public class LfsPrePushHook extends PrePushHook {
 			LfsConnectionFactory.fillAuthorizationHeader(contentServer);
 		}
 		contentServer.setDoOutput(true);
-		contentServer.setChunkedStreamingMode(256 << 10);
+		if (isChunkedUploadRequested(uploadAction)) {
+			contentServer.setChunkedStreamingMode(256 << 10);
+		} else {
+			contentServer.setFixedLengthStreamingMode(o.size);
+		}
 		try (OutputStream out = contentServer
 			.getOutputStream()) {
 			long size = Files.copy(path, out);
@@ -280,6 +286,28 @@ public class LfsPrePushHook extends PrePushHook {
 			}
 		}
 		return contentServer.getResponseCode();
+	}
+
+	/**
+	 * Tells whether the LFS server asks to upload the object in chunks.
+	 * <p>
+	 * The server asks for it with the {@code Transfer-Encoding: chunked} header
+	 * of the upload action, as the reference git-lfs client expects. Otherwise
+	 * the object is sent with its known {@code Content-Length}: some storages,
+	 * such as the Amazon S3 behind GitHub, reject chunked uploads.
+	 *
+	 * @param action
+	 *            the upload action returned by the LFS server
+	 * @return {@code true} if the object has to be uploaded in chunks
+	 */
+	private static boolean isChunkedUploadRequested(Protocol.Action action) {
+		if (action.header == null) {
+			return false;
+		}
+		return action.header.entrySet().stream()
+				.anyMatch(h -> HDR_TRANSFER_ENCODING.equalsIgnoreCase(h.getKey())
+						&& h.getValue() != null
+						&& CHUNKED.equalsIgnoreCase(h.getValue().trim()));
 	}
 
 	/*

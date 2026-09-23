@@ -11,11 +11,14 @@ package org.eclipse.jgit.lfs.server.fs;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
@@ -23,7 +26,10 @@ import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.RemoteAddCommand;
 import org.eclipse.jgit.junit.JGitTestUtil;
 import org.eclipse.jgit.junit.TestRepository;
+import org.eclipse.jgit.junit.http.AccessEvent;
 import org.eclipse.jgit.lfs.BuiltinLFS;
+import org.eclipse.jgit.lfs.lib.AnyLongObjectId;
+import org.eclipse.jgit.lfs.server.Response;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
@@ -135,6 +141,38 @@ public class PushTest extends LfsServerTest {
 	}
 
 	@Test
+	public void testPushWithContentLength() throws Exception {
+		pushLfsBlob();
+
+		AccessEvent upload = getUpload();
+		assertEquals(200, upload.getStatus());
+		assertEquals("7", upload.getRequestHeader("Content-Length"));
+		assertNull(upload.getRequestHeader("Transfer-Encoding"));
+	}
+
+	@Test
+	public void testPushChunkedWhenRequested() throws Exception {
+		repository = new FileLfsRepository(repository.getUrl(), getDir()) {
+			@Override
+			public Response.Action getUploadAction(AnyLongObjectId id,
+					long size) {
+				Response.Action action = super.getUploadAction(id, size);
+				Map<String, String> header = new HashMap<>(action.header);
+				header.put("Transfer-Encoding", "chunked");
+				action.header = header;
+				return action;
+			}
+		};
+
+		pushLfsBlob();
+
+		AccessEvent upload = getUpload();
+		assertEquals(200, upload.getStatus());
+		assertEquals("chunked", upload.getRequestHeader("Transfer-Encoding"));
+		assertNull(upload.getRequestHeader("Content-Length"));
+	}
+
+	@Test
 	public void testPushAllBranches() throws Exception {
 		git.branchCreate().setName("branch-1").call();
 		JGitTestUtil.writeTrashFile(localDb.getRepository(), "b.bin", "xyz");
@@ -205,5 +243,19 @@ public class PushTest extends LfsServerTest {
 				.setFastForward(MergeCommand.FastForwardMode.NO_FF)
 				.call();
 		assertTrue(result.getMergeStatus().isSuccessful());
+	}
+
+	private void pushLfsBlob() throws Exception {
+		JGitTestUtil.writeTrashFile(localDb.getRepository(), "a.bin",
+				"1234567");
+		git.add().addFilepattern("a.bin").call();
+		git.commit().setMessage("add lfs blob").call();
+		git.push().call();
+	}
+
+	private AccessEvent getUpload() {
+		return server.getRequests().stream()
+				.filter(e -> "PUT".equals(e.getMethod())).findFirst()
+				.orElseThrow();
 	}
 }

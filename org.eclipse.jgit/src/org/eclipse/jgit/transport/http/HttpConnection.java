@@ -308,6 +308,28 @@ public interface HttpConnection {
 	void setFixedLengthStreamingMode(int contentLength);
 
 	/**
+	 * Set fixed length streaming mode for a body of any size
+	 * <p>
+	 * The body is streamed without buffering and its length is sent in the
+	 * {@code Content-Length} header.
+	 * <p>
+	 * The default implementation delegates to
+	 * {@link #setFixedLengthStreamingMode(int)}, so it accepts at most
+	 * {@link Integer#MAX_VALUE} bytes.
+	 *
+	 * @see HttpURLConnection#setFixedLengthStreamingMode(long)
+	 * @param contentLength
+	 *            The number of bytes which will be written to the OutputStream.
+	 * @throws ArithmeticException
+	 *             if the default implementation gets more than
+	 *             {@link Integer#MAX_VALUE} bytes
+	 * @since 7.8
+	 */
+	default void setFixedLengthStreamingMode(long contentLength) {
+		setFixedLengthStreamingMode(Math.toIntExact(contentLength));
+	}
+
+	/**
 	 * Get output stream
 	 *
 	 * @see HttpURLConnection#getOutputStream()

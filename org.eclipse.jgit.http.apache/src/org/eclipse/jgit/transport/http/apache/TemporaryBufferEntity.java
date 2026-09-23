@@ -26,7 +26,7 @@ public class TemporaryBufferEntity extends AbstractHttpEntity
 		implements AutoCloseable {
 	private TemporaryBuffer buffer;
 
-	private Integer contentLength;
+	private Long contentLength;
 
 	/**
 	 * Construct a new {@link org.apache.http.HttpEntity} which will contain the
@@ -56,7 +56,7 @@ public class TemporaryBufferEntity extends AbstractHttpEntity
 	@Override
 	public long getContentLength() {
 		if (contentLength != null)
-			return contentLength.intValue();
+			return contentLength.longValue();
 		return buffer.length();
 	}
 
@@ -83,7 +83,18 @@ public class TemporaryBufferEntity extends AbstractHttpEntity
 	 *            content length
 	 */
 	public void setContentLength(int contentLength) {
-		this.contentLength = Integer.valueOf(contentLength);
+		setContentLength((long) contentLength);
+	}
+
+	/**
+	 * Set the <code>contentLength</code> of a body of any size
+	 *
+	 * @param contentLength
+	 *            content length
+	 * @since 7.8
+	 */
+	public void setContentLength(long contentLength) {
+		this.contentLength = Long.valueOf(contentLength);
 	}
 
 	/**

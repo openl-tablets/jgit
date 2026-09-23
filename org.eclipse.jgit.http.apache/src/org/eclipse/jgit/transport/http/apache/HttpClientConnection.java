@@ -404,6 +404,11 @@ public class HttpClientConnection implements HttpConnection {
 
 	@Override
 	public void setFixedLengthStreamingMode(int contentLength) {
+		setFixedLengthStreamingMode((long) contentLength);
+	}
+
+	@Override
+	public void setFixedLengthStreamingMode(long contentLength) {
 		if (entity != null)
 			throw new IllegalArgumentException();
 		entity = new TemporaryBufferEntity(new LocalFile(null));
